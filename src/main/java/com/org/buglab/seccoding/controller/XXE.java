@@ -50,6 +50,59 @@ public class XXE {
         }
         return "Fix";
     }
+ @RequestMapping(value = "/DocumentBuilderFactory", method = RequestMethod.POST)
+    public String DocumentBuilderFactory(HttpServletRequest request)
+    {
+        try {
+            InputStream in=request.getInputStream();
+            // DOM 解析器的工厂实例
+            DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+            //DOM 工厂获得 DOM 解析器
+            DocumentBuilder dbr=dbf.newDocumentBuilder();
+            //解析Document
+            org.w3c.dom.Document doc= dbr.parse(in);
+            // 得到xml根元素       
+            org.w3c.dom.Element root = doc.getDocumentElement();
+            org.w3c.dom.NodeList elementList = root.getChildNodes();
+            // 遍历所有子节点
 
+            // 释放资源       
+            in.close();
+            in = null;
+
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+        }
+        return "Not Fix";
+    }
+
+    @RequestMapping(value = "/DocumentBuilderFactory-fix", method = RequestMethod.POST)
+    public String Fix_DocumentBuilderFactory(HttpServletRequest request)
+    {
+        try {
+            InputStream in=request.getInputStream();
+            // DOM 解析器的工厂实例
+            DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            //DOM 工厂获得 DOM 解析器
+            DocumentBuilder dbr=dbf.newDocumentBuilder();
+            //解析Document
+            org.w3c.dom.Document doc= dbr.parse(in);
+            // 得到xml根元素       
+            org.w3c.dom.Element root = doc.getDocumentElement();
+            org.w3c.dom.NodeList elementList = root.getChildNodes();
+            // 遍历所有子节点
+
+            // 释放资源       
+            in.close();
+            in = null;
+
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+        }
+        return "Fix";
+    }
 
 }

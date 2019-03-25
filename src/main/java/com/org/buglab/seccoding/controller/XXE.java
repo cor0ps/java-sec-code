@@ -29,6 +29,27 @@ public class XXE {
         }
         return "OK";
     }
+@RequestMapping(value = "/SAXReader-fix", method = RequestMethod.POST)
+    public String Fix_SAXReader(HttpServletRequest request) {
+        try {
+            InputStream in = request.getInputStream();
+            SAXReader saxReader = new SAXReader();
+            saxReader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            saxReader.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            saxReader.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            Document document = saxReader.read(in);
+            Element root = document.getRootElement();
+            List<Element> elementList = root.elements();
+            for (Element e : elementList) {
+                System.out.println(e.getName() + ":" + e.getText());
+            }
+            in.close();
+            in = null;
+        } catch (IOException | DocumentException | SAXException e) {
+            e.printStackTrace();
+        }
+        return "Fix";
+    }
 
 
 }

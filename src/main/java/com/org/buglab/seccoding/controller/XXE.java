@@ -1,10 +1,34 @@
 package com.org.buglab.seccoding.controller;
 
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.xml.sax.SAXException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+/*
+*
+* <?xml version ="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+<!ENTITY xxe SYSTEM "file:///etc/flag">
+]>
+<foo>&xxe;</foo>
+ */
 
 @RestController
+@RequestMapping("/xxe")
 public class XXE {
+
    @RequestMapping(value = "/SAXReader", method = RequestMethod.POST)
     public String SAXReader(HttpServletRequest request) {
         try {
@@ -23,11 +47,11 @@ public class XXE {
             }
             // 释放资源       
             in.close();
-            in = null;
+
         } catch (IOException | DocumentException e) {
             e.printStackTrace();
         }
-        return "OK";
+        return "Not Fix";
     }
 @RequestMapping(value = "/SAXReader-fix", method = RequestMethod.POST)
     public String Fix_SAXReader(HttpServletRequest request) {
@@ -45,7 +69,7 @@ public class XXE {
             }
             in.close();
             in = null;
-        } catch (IOException | DocumentException | SAXException e) {
+        } catch (IOException | DocumentException  | SAXException e) {
             e.printStackTrace();
         }
         return "Fix";
@@ -68,7 +92,6 @@ public class XXE {
 
             // 释放资源       
             in.close();
-            in = null;
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();
@@ -97,7 +120,6 @@ public class XXE {
 
             // 释放资源       
             in.close();
-            in = null;
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
             e.printStackTrace();

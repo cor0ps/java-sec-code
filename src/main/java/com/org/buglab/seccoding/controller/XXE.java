@@ -4,9 +4,9 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ import java.util.List;
 <foo>&xxe;</foo>
  */
 
-@RestController
+@Controller
 @RequestMapping("/xxe")
 public class XXE {
 
@@ -125,6 +125,15 @@ public class XXE {
             e.printStackTrace();
         }
         return "Fix";
+    }
+
+    @RequestMapping(value = "/test" , method = RequestMethod.GET)
+    public String world(HttpServletRequest request) {
+
+        //request.setAttribute("name", "xxxxxxxxx");
+
+        return "world";
+
     }
 
 }

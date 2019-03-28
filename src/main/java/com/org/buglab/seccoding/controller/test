@@ -13,7 +13,8 @@
             e.printStackTrace();
         }
         map.put("weixin",wxpay);
-        return wxpay;
+        map.put("weixin",wxpay.toString());
+        return "DocumentBuilder";
 
     }
 

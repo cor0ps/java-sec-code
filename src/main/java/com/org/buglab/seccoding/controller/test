@@ -1,0 +1,36 @@
+ @RequestMapping(value = "/DocumentBuilder", method = RequestMethod.POST)
+    public Map<String, String> DocumentBuilder(ModelMap map,HttpServletRequest request) {
+        /*
+         *
+         */
+        Map<String, String> wxpay = null;
+        try {
+            String xml = getBody(request);
+            wxpay = xmlToMap(xml);
+            System.out.println(wxpay);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        map.put("weixin",wxpay);
+        return wxpay;
+
+    }
+
+    // 获取body数据
+    private String getBody(HttpServletRequest request) throws IOException {
+        InputStream in = request.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        StringBuffer sb = new StringBuffer("");
+        String temp;
+        while ((temp = br.readLine()) != null) {
+            sb.append(temp);
+        }
+        if (in != null) {
+            in.close();
+        }
+        if (br != null) {
+            br.close();
+        }
+        return sb.toString();
+    }

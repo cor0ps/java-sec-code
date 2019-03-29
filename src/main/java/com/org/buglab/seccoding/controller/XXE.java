@@ -5,17 +5,24 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import static com.org.buglab.seccoding.wxpay.sdk.WXPayUtil.xmlToMap;
 /*
 *
 * <?xml version ="1.0" encoding="UTF-8"?>
@@ -23,13 +30,32 @@ import java.util.List;
 <!ENTITY xxe SYSTEM "file:///etc/flag">
 ]>
 <foo>&xxe;</foo>
+-javaagent:"D:\Agent.jar" -Dlog4j.configuration=file:C:\Users\t00381761\IdeaProjects\java-sec-code-master\src\main\resources\log4j.properties
  */
+
+
+/*
+@RequestMapping
+@RequestMapping 是一个用来处理请求地址映射的注解，可用于类或方法上
+        用于类上，表示类中的所有响应请求的方法都是以该地址作为父路径
+        用于方法上，表示在类的父路径下追加方法上注解中的地址将会访问到该方法
+*/
 
 @Controller
 @RequestMapping("/xxe")
 public class XXE {
 
-   @RequestMapping(value = "/SAXReader", method = RequestMethod.POST)
+    private String data;
+    private HttpServletRequest request;
+
+    @RequestMapping(value = "/index", method = RequestMethod.GET)
+    public String index(ModelMap map, HttpServletRequest request) {
+        map.put("SAXReader", "SAXReader");
+        map.put("DocumentBuilderFactory", "DocumentBuilderFactory");
+        return "index";
+    }
+
+    @RequestMapping(value = "/SAXReader", method = RequestMethod.POST)
     public String SAXReader(HttpServletRequest request) {
         try {
             InputStream in = request.getInputStream();
@@ -53,7 +79,8 @@ public class XXE {
         }
         return "Not Fix";
     }
-@RequestMapping(value = "/SAXReader-fix", method = RequestMethod.POST)
+
+    @RequestMapping(value = "/SAXReader-fix", method = RequestMethod.POST)
     public String Fix_SAXReader(HttpServletRequest request) {
         try {
             InputStream in = request.getInputStream();
@@ -69,28 +96,26 @@ public class XXE {
             }
             in.close();
             in = null;
-        } catch (IOException | DocumentException  | SAXException e) {
+        } catch (IOException | DocumentException | SAXException e) {
             e.printStackTrace();
         }
         return "Fix";
     }
- @RequestMapping(value = "/DocumentBuilderFactory", method = RequestMethod.POST)
-    public String DocumentBuilderFactory(HttpServletRequest request)
-    {
+
+    @RequestMapping(value = "/DocumentBuilderFactory", method = RequestMethod.POST)
+    public String DocumentBuilderFactory(ModelMap map, HttpServletRequest request) {
         try {
-            InputStream in=request.getInputStream();
+            InputStream in = request.getInputStream();
             // DOM 解析器的工厂实例
-            DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             //DOM 工厂获得 DOM 解析器
-            DocumentBuilder dbr=dbf.newDocumentBuilder();
+            DocumentBuilder dbr = dbf.newDocumentBuilder();
             //解析Document
-            org.w3c.dom.Document doc= dbr.parse(in);
+            org.w3c.dom.Document doc = dbr.parse(in);
             // 得到xml根元素       
             org.w3c.dom.Element root = doc.getDocumentElement();
-            org.w3c.dom.NodeList elementList = root.getChildNodes();
-            // 遍历所有子节点
-
-            // 释放资源       
+            praseElement(root);
+            map.put("SAXReader", "SAXReader");
             in.close();
 
         } catch (ParserConfigurationException | IOException | SAXException e) {
@@ -98,8 +123,45 @@ public class XXE {
         }
         return "Not Fix";
     }
-   
- private void praseElement(org.w3c.dom.Element element) {
+
+    @RequestMapping(value = "/DocumentBuilder", method = RequestMethod.POST)
+    public String DocumentBuilder(ModelMap map, HttpServletRequest request) {
+
+        Map<String, String> wxpay = null;
+        try {
+            String xml = getBody(request);
+            System.out.println(xml);
+            wxpay = xmlToMap(xml);
+            System.out.println(wxpay);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!wxpay.isEmpty())
+            map.put("weixin", wxpay.toString());
+        return "DocumentBuilder";
+
+    }
+
+    // 获取body数据
+    private String getBody(HttpServletRequest request) throws IOException {
+        InputStream in = request.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        StringBuffer sb = new StringBuffer("");
+        String temp;
+        while ((temp = br.readLine()) != null) {
+            sb.append(temp);
+        }
+        if (in != null) {
+            in.close();
+        }
+        if (br != null) {
+            br.close();
+        }
+        return sb.toString();
+    }
+
+
+    private void praseElement(org.w3c.dom.Element element) {
         String tagName = element.getNodeName();
         NodeList children = element.getChildNodes();
         System.out.print("<" + tagName);
@@ -137,26 +199,26 @@ public class XXE {
         }
         System.out.print("</" + tagName + ">");
     }
-   
-    @RequestMapping(value = "/DocumentBuilderFactory-fix", method = RequestMethod.POST)
-    public String Fix_DocumentBuilderFactory(HttpServletRequest request)
-    {
+
+
+    @RequestMapping(value = "/DocumentBuilderFactory/fix", method = RequestMethod.GET)
+    public String Fix_DocumentBuilderFactory(HttpServletRequest request) {
         try {
-            InputStream in=request.getInputStream();
+            InputStream in = request.getInputStream();
             // DOM 解析器的工厂实例
-            DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
-            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
             dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             //DOM 工厂获得 DOM 解析器
-            DocumentBuilder dbr=dbf.newDocumentBuilder();
+            DocumentBuilder dbr = dbf.newDocumentBuilder();
             //解析Document
-            org.w3c.dom.Document doc= dbr.parse(in);
+            org.w3c.dom.Document doc = dbr.parse(in);
             // 得到xml根元素       
             org.w3c.dom.Element root = doc.getDocumentElement();
             org.w3c.dom.NodeList elementList = root.getChildNodes();
             // 遍历所有子节点
-
+            praseElement(root);
             // 释放资源       
             in.close();
 
@@ -166,13 +228,17 @@ public class XXE {
         return "Fix";
     }
 
-    @RequestMapping(value = "/test" , method = RequestMethod.GET)
-    public String world(HttpServletRequest request) {
-
-        //request.setAttribute("name", "xxxxxxxxx");
-
-        return "world";
-
+    @RequestMapping(value = "/api", method = RequestMethod.POST)
+    public String XmlRe(ModelMap map,@RequestBody String data, HttpServletRequest request) throws Exception {
+        Map<String,String> wxpay;
+        if (Pattern.matches("(?i)(.|\\s)*(file|ftp|gopher|CDATA|read_secret|logs|log|conf|etc|session|proc|root|history|\\.\\.|data|class|bash|viminfo)(.|\\s)*", data)) {
+               map.put("Error","Hacker! Hacker! Hacker! ");
+            return "DocumentBuilder";
+        } else {
+            wxpay = xmlToMap(data);
+            if (!wxpay.isEmpty())
+                map.put("weixin","{\"status\":\"OK\",\"message\":\""+ wxpay.toString() +"\"}");
+            return "DocumentBuilder";
+        }
     }
-
 }

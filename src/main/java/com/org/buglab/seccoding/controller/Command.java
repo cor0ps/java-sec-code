@@ -39,7 +39,6 @@ public class Command {
             e.printStackTrace();
         }
 
-
     }
 
     @RequestMapping(value = "/start/list", method = RequestMethod.GET)
@@ -70,13 +69,13 @@ public class Command {
             e.printStackTrace();
         }
 
-
     }
 
     @RequestMapping(value = "/exec", method = RequestMethod.GET)
     public void exec(HttpServletRequest request) {
         Process process;
         String cmd = "cmd /c ipconfig/all";
+        // if(checkCommand(command))
         try {
             //执行命令
             process = Runtime.getRuntime().exec(cmd);
@@ -90,6 +89,37 @@ public class Command {
             //直到读完为止
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+    @RequestMapping(value = "/exec/special", method = RequestMethod.GET)
+    public void exec_special(HttpServletRequest request) {
+        Process process;
+        String ipaddress="cmd /c notepad.exe;";
+        String PINGCOMMAND="ping -c 4 IP";
+      String pingCommand1=PINGCOMMAND.replaceFirst("IP",ipaddress);
+      String pingCommand2=PINGCOMMAND.replaceAll("ping -c 4 IP",ipaddress);
+      System.out.println("command:"+pingCommand1);
+        // if(checkCommand(command))
+        try {
+            //执行命令
+            process = Runtime.getRuntime().exec(pingCommand1);
+            //取得命令结果的输出流
+            InputStream inputStream = process.getInputStream();
+            //用一个读输出流类去读
+            InputStreamReader isr = new InputStreamReader(inputStream,"UTF-8");
+            //用缓冲器读行
+            BufferedReader br = new BufferedReader(isr);
+            String line = null;
+            //直到读完为止
+            while ((line = br.readLine()) != null) {
+                System.out.println("output"+line);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,0 +1,28 @@
+package com.org.buglab.seccoding.utils;
+
+import sun.misc.BASE64Encoder;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+public class Base64Help {
+    //编码
+    public static String encode(byte[] bstr)
+    {
+        return new BASE64Encoder().encode(bstr);
+    }
+
+    public static InputStream decode(InputStream str) {
+        ByteArrayInputStream stream=null;
+        try {
+            sun.misc.BASE64Decoder decoder = new sun.misc.BASE64Decoder();
+            byte[] bt = decoder.decodeBuffer(str);
+            stream =new ByteArrayInputStream(bt);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return stream;
+    }
+}

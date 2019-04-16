@@ -36,7 +36,7 @@ public class Deserialize {
     @RequestMapping(value = "/deserialize", method = RequestMethod.POST)
     public String deserialize(ModelMap map, HttpServletRequest request) {
         try {
-            ObjectInputStream ois = new ObjectInputStream(request.getInputStream());
+            ObjectInputStream ois = new ObjectInputStream(Base64Help.decode(request.getInputStream()));
             User user = (User) ois.readObject();
             System.out.println("deserialize");
             //从文件中反序列化obj对象
